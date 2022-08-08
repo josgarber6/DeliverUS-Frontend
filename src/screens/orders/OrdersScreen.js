@@ -13,6 +13,8 @@ export default function OrdersScreen ({ navigation, route }) {
   const [orders, setOrders] = useState([])
   const { loggedInUser } = useContext(AuthorizationContext)
 
+  // FR5: Listing my confirmed orders. A Customer will be able to check his/her confirmed orders, sorted from the most recent to the oldest.
+
   useEffect(() => {
     async function fetchOrders () {
       try {
@@ -70,23 +72,6 @@ export default function OrdersScreen ({ navigation, route }) {
         ListEmptyComponent={renderEmptyOrder}
         keyExtractor={item => item.id.toString()}
         />
-        {/* <TextSemiBold>FR5: Listing my confirmed orders</TextSemiBold>
-        <TextRegular>A Customer will be able to check his/her confirmed orders, sorted from the most recent to the oldest.</TextRegular>
-        <Pressable
-            onPress={() => {
-              navigation.navigate('OrderDetailScreen', { id: route.params.id })
-            }}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed
-                  ? brandPrimaryTap
-                  : brandPrimary
-              },
-              styles.button
-            ]}
-        >
-            <TextRegular textStyle={styles.text}>Go to Order Detail Screen</TextRegular>
-        </Pressable> */}
     </View>
   )
 }

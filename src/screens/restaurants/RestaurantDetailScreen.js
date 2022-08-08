@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable } from 'react-native'
 import { showMessage } from 'react-native-flash-message'
 import { getDetail } from '../../api/RestaurantEndpoints'
@@ -8,11 +8,15 @@ import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
 import { brandPrimary, brandPrimaryTap, brandSecondary, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
 import { TextInput } from 'react-native-web'
+import { AuthorizationContext } from '../../context/AuthorizationContext'
 
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
   const [precio, setPrecio] = useState([])
   const [quantities, setQuantity] = useState([])
+  const { loggedInUser } = useContext(AuthorizationContext)
+
+  // FR2: Restaurant details and menu. Customers will be able to query restaurants details and the products offered by them.
 
   useEffect(() => {
     async function fetchRestaurantDetail () {
@@ -32,7 +36,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       }
     }
     fetchRestaurantDetail()
-  }, [route])
+  }, [loggedInUser, route])
 
   const renderHeader = () => {
     return (
@@ -76,6 +80,10 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
               </TextRegular>
           <View style={{ alignItems: 'flex-start' }}>
             <View style={{ width: 50 }}>
+            {/* FR3: Add, edit and remove products to a new order.
+                A customer can add several products, and several units of a product to a new order.
+                Before confirming, customer can edit and remove products.
+                Once the order is confirmed, it cannot be edited or removed. */}
               <TextInput
                 style={styles.input}
                 name='quantity'

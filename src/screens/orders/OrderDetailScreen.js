@@ -1,17 +1,18 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable } from 'react-native'
+import { StyleSheet, View, FlatList, Image } from 'react-native'
 import { showMessage } from 'react-native-flash-message'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
 import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
-import { brandPrimary, brandPrimaryTap, brandSecondary, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
+import { brandSecondary, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
 import { getOrderDetail } from '../../api/OrderEndpoints'
 
 export default function OrderDetailScreen ({ navigation, route }) {
   const [order, setOrder] = useState({})
   const [restaurant, setRestaurant] = useState({})
+
+  // FR6: Show order details. A customer will be able to look his/her orders up. The system should provide all details of an order, including the ordered products and their prices.
 
   useEffect(() => {
     async function fetchOrderDetail () {
@@ -79,9 +80,6 @@ export default function OrderDetailScreen ({ navigation, route }) {
     />
   )
 }
-
-{ /* <TextSemiBold>FR6: Show order details</TextSemiBold>
-<TextRegular>A customer will be able to look his/her orders up. The system should provide all details of an order, including the ordered products and their prices.</TextRegular> */ }
 
 const styles = StyleSheet.create({
   container: {

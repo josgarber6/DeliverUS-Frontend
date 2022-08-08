@@ -107,6 +107,9 @@ export default function ConfirmOrderScreen ({ navigation, route }) {
               {backendErrors &&
               backendErrors.map((error, index) => <TextError key={index}>{error.msg}</TextError>)
               }
+
+            {/* FR4: Confirm or dismiss new order. */}
+
             <Pressable
               onPress={() => {
                 handleSubmit()

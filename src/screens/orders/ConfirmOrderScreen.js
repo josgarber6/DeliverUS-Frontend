@@ -74,6 +74,10 @@ export default function ConfirmOrderScreen ({ navigation, route }) {
       data={products}
       ListHeaderComponent={renderHeader}
       />
+      {/* FR3: Add, edit and remove products to a new order.
+                A customer can add several products, and several units of a product to a new order.
+                Before confirming, customer can edit and remove products.
+                Once the order is confirmed, it cannot be edited or removed. */}
         <ScrollView>
           <TextRegular textStyle={{ color: 'black', fontSize: 14 }}>
             Do you want to use this address to receive your order? <TextSemibold textStyle={{ fontSize: 16 }}>{loggedInUser.address}</TextSemibold>
