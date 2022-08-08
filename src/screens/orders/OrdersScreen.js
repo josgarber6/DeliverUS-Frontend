@@ -1,8 +1,8 @@
 import React, { useEffect, useContext, useState } from 'react'
-import { StyleSheet, View, Pressable } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import TextRegular from '../../components/TextRegular'
 import TextSemibold from '../../components/TextSemibold'
-import { brandPrimary, brandPrimaryTap, brandSecondary, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
+import { brandPrimary, brandSecondary, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
 import { AuthorizationContext } from '../../context/AuthorizationContext'
 import { showMessage } from 'react-native-flash-message'
 import { getMyOrders } from '../../api/OrderEndpoints'
@@ -39,12 +39,13 @@ export default function OrdersScreen ({ navigation, route }) {
       <ImageCard
         imageUri={item.restaurant.logo ? { uri: process.env.API_BASE_URL + '/' + item.restaurant.logo } : undefined}
         onPress={() => {
-          navigation.navigate('OrderDetailScreen', { id: item.id })
+          navigation.navigate('OrderDetailScreen', { id: item.id, dirty: true })
         }}
       >
-      <View style={{ marginLeft: 20 }}>
-        <TextSemibold style={styles.title}>Order {item.id}</TextSemibold>
-        <TextSemibold numberOfLines={2}>Created at: {item.createdAt}</TextSemibold>
+      <View style={{ marginLeft: 10 }}>
+        <TextSemibold textStyle={{ fontSize: 16, color: 'black' }}>Order {item.id}</TextSemibold>
+        <TextSemibold>Created at: <TextRegular numberOfLines={2}>{item.createdAt}</TextRegular></TextSemibold>
+        <TextSemibold>Price: <TextRegular style={{ color: brandPrimary }}>{item.price.toFixed(2)} €</TextRegular></TextSemibold>
         <TextSemibold>Shipping: <TextRegular style={{ color: brandPrimary }}>{item.shippingCosts.toFixed(2)} €</TextRegular></TextSemibold>
         <TextSemibold>Status: <TextRegular style={{ color: brandPrimary }}>{item.status}</TextRegular></TextSemibold>
       </View>
@@ -55,7 +56,7 @@ export default function OrdersScreen ({ navigation, route }) {
   const renderEmptyOrder = () => {
     return (
       <TextRegular textStyle={styles.emptyList}>
-        No orders were retreived. Have you made any orders?
+        No orders were retreived. Are you logged in?
       </TextRegular>
     )
   }
@@ -63,9 +64,11 @@ export default function OrdersScreen ({ navigation, route }) {
   return (
     <View style={styles.container}>
       <FlatList
+        style={styles.container}
         data={orders}
         renderItem={renderOrders}
         ListEmptyComponent={renderEmptyOrder}
+        keyExtractor={item => item.id.toString()}
         />
         {/* <TextSemiBold>FR5: Listing my confirmed orders</TextSemiBold>
         <TextRegular>A Customer will be able to check his/her confirmed orders, sorted from the most recent to the oldest.</TextRegular>
@@ -90,9 +93,7 @@ export default function OrdersScreen ({ navigation, route }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    flex: 1
   },
   button: {
     borderRadius: 8,
@@ -109,5 +110,9 @@ const styles = StyleSheet.create({
   textTitle: {
     fontSize: 20,
     color: 'black'
+  },
+  emptyList: {
+    textAlign: 'center',
+    padding: 50
   }
 })

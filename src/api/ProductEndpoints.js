@@ -8,4 +8,8 @@ function getPopular () {
   return get('products/popular')
 }
 
-export { getProductCategories, getPopular }
+function getAllProducts () {
+  return get('products')
+}
+
+export { getProductCategories, getPopular, getAllProducts }

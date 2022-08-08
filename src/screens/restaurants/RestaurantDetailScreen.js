@@ -2,27 +2,25 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable } from 'react-native'
 import { showMessage } from 'react-native-flash-message'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { getDetail } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
-import InputItem from '../../components/InputItem'
 import { brandPrimary, brandPrimaryTap, brandSecondary, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
-import { ScrollView, TextInput } from 'react-native-web'
-import { createOrder } from '../../api/OrderEndpoints'
-import { ErrorMessage, Formik } from 'formik'
-import TextError from '../../components/TextError'
+import { TextInput } from 'react-native-web'
 
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
-  const [backendErrors, setBackendErrors] = useState()
-  const [precio, setPrecio] = useState(0.0)
+  const [precio, setPrecio] = useState([])
+  const [quantities, setQuantity] = useState([])
 
   useEffect(() => {
     async function fetchRestaurantDetail () {
       try {
         const fetchedRestaurant = await getDetail(route.params.id)
+        const cantidad = fetchedRestaurant.products.map(x => 0)
+        setQuantity(cantidad)
+        setPrecio(cantidad)
         setRestaurant(fetchedRestaurant)
       } catch (error) {
         showMessage({
@@ -39,13 +37,6 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   const renderHeader = () => {
     return (
       <View>
-        {/* <View style={styles.FRHeader}>
-          <TextSemiBold>FR2: Restaurants details and menu.</TextSemiBold>
-          <TextRegular>Customers will be able to query restaurants details and the products offered by them.</TextRegular>
-          <TextSemiBold>FR3: Add, edit and remove products to a new order</TextSemiBold>
-          <TextRegular>A customer can add several products, and several units of a product to a new order. Before confirming, customer can edit and remove products. Once the order is confirmed, it cannot be edited or removed.</TextRegular>
-          <TextRegular>Keep in mind FR4: Confirm or dismiss new order. You have to allow user to confirm or dismiss the order before sending it to the backend.</TextRegular>
-        </View> */}
         <ImageBackground source={(restaurant?.heroImage) ? { uri: process.env.API_BASE_URL + '/' + restaurant.heroImage, cache: 'force-cache' } : undefined} style={styles.imageBackground}>
           <View style={styles.restaurantHeaderContainer}>
             <TextSemiBold textStyle={styles.textTitle}>{restaurant.name}</TextSemiBold>
@@ -58,30 +49,20 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
     )
   }
 
-  const createOrder = async (values) => {
-    setBackendErrors([])
-    try {
-      console.log(values)
-      const createdOrder = await createOrder(values)
-      showMessage({
-        message: `Order ${createdOrder.id} succesfully created`,
-        type: 'success',
-        style: flashStyle,
-        textStyle: flashTextStyle
-      })
-      navigation.navigate('OrdersScreen', { dirty: true })
-    } catch (error) {
-      console.log(error)
-      setBackendErrors(error.errors)
-    }
+  function updatePriceQuantity ({ quantity, index, item }) {
+    // Updating the quantity
+    const auxQuantity = [...quantities]
+    auxQuantity[index] = parseInt(quantity)
+    setQuantity(auxQuantity)
+    // Updating the price
+    const precioAux = [...precio]
+    precioAux[index] = item.price * quantity
+    setPrecio(precioAux)
   }
 
-  const renderProduct = ({ item }) => {
+  const renderProduct = ({ item, index }) => {
     return (
-      // <Formik
-      //   onSubmit={createOrder}>
-      // {({ handleSubmit, setFieldValue, values }) => (
-      // <View style={{ flex: 5, padding: 10 }}>
+      <View style={{ flex: 5, padding: 10 }}>
       <ImageCard
         imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : undefined}
         title={item.name}
@@ -89,31 +70,31 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
         <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2)}€</TextSemiBold>
         {/* We'll do here an input to show a little card in which the client can put the quantity he wants. */}
-        <View style={{ marginTop: 10 }}>
-          <TextRegular style={styles.text}>Cantidad:</TextRegular>
-        <View style={{ alignItems: 'center' }}>
-          <View style={{ width: 50, marginRight: 20, marginBottom: 20 }}>
-        <InputItem
-          name='quantity'
-          placeholder='0'
-          // onChangeText={newPrice => setPrecio(newPrice)}
-          />
-          </View>
+        <View>
+          <TextRegular>Cantidad:
+              <TextRegular textStyle={{ paddingLeft: 50 }}>Precio total: <TextSemiBold>{precio[index]} €</TextSemiBold></TextRegular>
+              </TextRegular>
+          <View style={{ alignItems: 'flex-start' }}>
+            <View style={{ width: 50 }}>
+              <TextInput
+                style={styles.input}
+                name='quantity'
+                placeholder='0'
+                keyboardType='numeric'
+                onChangeText={quantity => updatePriceQuantity({ quantity, index, item })}
+                />
+            </View>
           </View>
         </View>
-      {precio && <View style={{ flexDirection: 'row', alignSelf: 'right' }}><TextRegular style={styles.text}>Precio total: {precio.toFixed(2)}</TextRegular></View>}
-      {backendErrors && backendErrors.map((error, index) => <TextError key={index}>{error.msg}</TextError>)}
       </ImageCard>
-      // </View>
+    </View>
     )
   }
-  // )
-  // }
 
   const renderFooter = () => {
     return (
       <Pressable
-        onPress={() => { navigation.navigate('RestaurantsScreen') }}
+        onPress={() => navigation.navigate('ConfirmOrderScreen', { quantities: quantities, price: precio, id: route.params.id })}
         style={({ pressed }) => [
           {
             backgroundColor: pressed
@@ -190,7 +171,8 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
     height: 40,
-    marginTop: 12,
+    marginTop: 10,
+    marginBottom: 12,
     padding: 10,
     alignSelf: 'center',
     flexDirection: 'row',
@@ -201,5 +183,12 @@ const styles = StyleSheet.create({
     color: brandSecondary,
     textAlign: 'center',
     marginLeft: 5
+  },
+  input: {
+    borderRadius: 8,
+    height: 20,
+    borderWidth: 1,
+    padding: 15,
+    marginTop: 10
   }
 })

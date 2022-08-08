@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable } from 'react-native'
 import { showMessage } from 'react-native-flash-message'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { getDetail } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
@@ -11,15 +10,21 @@ import { brandPrimary, brandPrimaryTap, brandSecondary, flashStyle, flashTextSty
 import { getOrderDetail } from '../../api/OrderEndpoints'
 
 export default function OrderDetailScreen ({ navigation, route }) {
-  const [order, setOrder] = useState([])
+  const [order, setOrder] = useState({})
+  const [restaurant, setRestaurant] = useState({})
+
   useEffect(() => {
     async function fetchOrderDetail () {
       try {
         const fetchedOrder = await getOrderDetail(route.params.id)
         setOrder(fetchedOrder)
+        setRestaurant(fetchedOrder.restaurant)
       } catch (error) {
         showMessage({
-          message: `There was an error while retrieving your orders. ${error}`
+          message: `There was an error while retrieving your orders. ${error}`,
+          type: 'error',
+          style: flashStyle,
+          textStyle: flashTextStyle
         })
       }
     }
@@ -28,88 +33,59 @@ export default function OrderDetailScreen ({ navigation, route }) {
 
   const renderHeader = () => {
     return (
-      <View>
-        <ImageBackground source={(order.restaurant?.heroImage) ? { uri: process.env.API_BASE_URL + '/' + order.restaurant.heroImage, cache: 'force-cache' } : undefined} style={styles.imageBackground}>
-          <View style={styles.restaurantHeaderContainer}>
-            <TextSemiBold textStyle={styles.textTitle}>Order {order.id}</TextSemiBold>
-            <Image style={styles.image} source={order.restaurant.logo ? { uri: process.env.API_BASE_URL + '/' + order.restaurant.logo, cache: 'force-cache' } : undefined} />
-          </View>
-        </ImageBackground>
+      <View style={styles.restaurantHeaderContainer}>
+        <Image style={styles.image} source={restaurant.logo ? { uri: process.env.API_BASE_URL + '/' + restaurant.logo, cache: 'force-cache' } : undefined} />
+        <TextSemiBold textStyle={styles.textTitle}>Order {order.id}</TextSemiBold>
+        <TextRegular textStyle={styles.headerText}>Created at: {order.createdAt}</TextRegular>
+        {order.startedAt && <TextRegular textStyle={styles.headerText}>Started at: {order.startedAt}</TextRegular>}
+        <TextRegular textStyle={styles.headerText}>Total Price: {order.price} €</TextRegular>
+        <TextRegular textStyle={styles.headerText}>Address: {order.address}</TextRegular>
+        <TextRegular textStyle={styles.headerText}>Shipping costs: {order.shippingCosts} €</TextRegular>
+        <TextRegular textStyle={styles.headerText}>Status: {order.status}</TextRegular>
       </View>
     )
   }
 
   const renderEmptyProductsList = () => {
     return (
-      <TextRegular>
+      <TextRegular style={styles.emptyList}>
         No products can be shown. Please order some products.
       </TextRegular>
     )
   }
 
   const renderProduct = ({ item }) => {
-    let price = 0.0
-    price += item.OrderProducts.price * item.OrderProducts.quantity
     return (
       <ImageCard
         imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : undefined}
         title={item.name}
         >
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
-        <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2)}€</TextSemiBold>
-        <View style={{ marginTop: 10 }}>
-          <TextRegular style={styles.text}>Cantidad: {item.OrderProducts.quantity}</TextRegular>
-          <TextRegular style={styles.text}>Precio unitario: {item.OrderProducts.price}</TextRegular>
-          {price && <TextRegular style={styles.text}>Precio total: {price.toFixed(2)}</TextRegular>}
-        </View>
+        <TextSemiBold>Unity price: <TextRegular textStyle={styles.price}>{item.price.toFixed(2)} €</TextRegular></TextSemiBold>
+        <TextSemiBold>Quantity: <TextRegular>{item.OrderProducts.quantity}</TextRegular></TextSemiBold>
+        <TextSemiBold>Total price: <TextRegular>{item.price.toFixed(2) * item.OrderProducts.quantity} €</TextRegular></TextSemiBold>
       </ImageCard>
     )
   }
 
-  const renderFooter = () => {
-    return (
-      <Pressable
-        onPress={() => { navigation.navigate('RestaurantsScreen') }}
-        style={({ pressed }) => [
-          {
-            backgroundColor: pressed
-              ? brandPrimaryTap
-              : brandPrimary
-          },
-          styles.button
-        ]}>
-        <TextRegular textStyle={styles.text}>
-          Create order
-        </TextRegular>
-      </Pressable>
-    )
-  }
   return (
-    <View style={styles.container}>
-      <FlatList
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyProductsList}
-        style={styles.container}
-        data={order.products}
-        renderItem={renderProduct}
-        keyExtractor={item => item.id.toString()}
-        ListFooterComponent={renderFooter}
-      >
-
-      </FlatList>
-
-          {/* <TextSemiBold>FR6: Show order details</TextSemiBold>
-          <TextRegular>A customer will be able to look his/her orders up. The system should provide all details of an order, including the ordered products and their prices.</TextRegular> */}
-    </View>
+    <FlatList
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={renderEmptyProductsList}
+      style={styles.container}
+      data={order.products}
+      renderItem={renderProduct}
+      keyExtractor={item => item.id.toString()}
+    />
   )
 }
 
+{ /* <TextSemiBold>FR6: Show order details</TextSemiBold>
+<TextRegular>A customer will be able to look his/her orders up. The system should provide all details of an order, including the ordered products and their prices.</TextRegular> */ }
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: 50
+    flex: 1
   },
   row: {
     padding: 15,
@@ -118,7 +94,7 @@ const styles = StyleSheet.create({
   },
   restaurantHeaderContainer: {
     height: 250,
-    padding: 20,
+    padding: 10,
     backgroundColor: 'rgba(0,0,0,0.5)',
     flexDirection: 'column',
     alignItems: 'center'
@@ -131,7 +107,8 @@ const styles = StyleSheet.create({
   image: {
     height: 100,
     width: 100,
-    margin: 10
+    marginBottom: 5,
+    marginTop: 1
   },
   description: {
     color: 'white'
@@ -158,5 +135,9 @@ const styles = StyleSheet.create({
     color: brandSecondary,
     textAlign: 'center',
     marginLeft: 5
+  },
+  headerText: {
+    color: 'white',
+    textAlign: 'center'
   }
 })

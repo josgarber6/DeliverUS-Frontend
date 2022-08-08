@@ -2,6 +2,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import React from 'react'
 import RestaurantDetailScreen from './RestaurantDetailScreen'
 import RestaurantsScreen from './RestaurantsScreen'
+import ConfirmOrderScreen from '../orders/ConfirmOrderScreen'
+import ConfirmOrderScreenYes from '../orders/ConfirmOrderScreenYes'
+import ConfirmOrderScreenNo from '../orders/ConfirmOrderScreenNo'
+import OrdersScreen from '../orders/OrdersScreen'
+import OrderDetailScreen from '../orders/OrderDetailScreen'
 
 const Stack = createNativeStackNavigator()
 
@@ -20,6 +25,39 @@ export default function RestaurantsStack () {
         options={{
           title: 'Restaurant Detail'
         }} />
+      <Stack.Screen
+        name='ConfirmOrderScreen'
+        component={ConfirmOrderScreen}
+        options={{
+          title: 'Confirm your order'
+        }} />
+      <Stack.Screen
+        name='ConfirmOrderScreenYes'
+        component={ConfirmOrderScreenYes}
+        options={{
+          title: 'Confirm your order'
+        }} />
+      <Stack.Screen
+        name='ConfirmOrderScreenNo'
+        component={ConfirmOrderScreenNo}
+        options={{
+          title: 'Confirm your order'
+        }}
+      />
+      <Stack.Screen
+        name='OrdersScreen'
+        component={OrdersScreen}
+        options={{
+          title: 'My Orders'
+        }}
+      />
+      <Stack.Screen
+        name='OrderDetailScreen'
+        component={OrderDetailScreen}
+        options={{
+          title: 'Order Detail'
+        }}
+      />
     </Stack.Navigator>
   )
 }
