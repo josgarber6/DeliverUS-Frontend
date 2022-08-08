@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import TextSemiBold from '../../components/TextSemibold'
 import TextRegular from '../../components/TextRegular'
@@ -9,13 +9,11 @@ import { getRestaurants } from '../../api/RestaurantEndpoints'
 import { showMessage } from 'react-native-flash-message'
 import { FlatList, Text } from 'react-native-web'
 import { getPopular } from '../../api/ProductEndpoints'
-import { AuthorizationContext } from '../../context/AuthorizationContext'
 
 export default function RestaurantsScreen ({ navigation, route }) {
   // TODO: Create a state for storing the restaurants
   const [restaurants, setRestaurants] = useState([])
   const [popular, setPopular] = useState([])
-  const { loggedIn } = useContext(AuthorizationContext)
 
   // FR1: Restaurants listing
   useEffect(() => {
@@ -35,7 +33,7 @@ export default function RestaurantsScreen ({ navigation, route }) {
       }
     }
     fetchRestaurants() // TODO: set restaurants to state
-  }, [loggedIn, route])
+  }, [route])
 
   // FR7: Show top 3 products - Retrieving the popular products
 
